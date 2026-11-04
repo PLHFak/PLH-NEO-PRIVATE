@@ -157,6 +157,7 @@ async function press(i) {
 
 const airplayOn = () => state.local && state.mac && state.cfg.output?.mode === 'airplay' && (state.cfg.output.devices || []).length;
 async function play(url, title, key) {
+  if (state.cfg.output?.mode === 'airplay' && !(state.cfg.output.devices || []).length) toast('AirPlay choisi mais aucune enceinte cochée : le son reste sur le Mac', 5000);
   if (airplayOn()) {
     audio.pause();
     toast(`AirPlay → ${state.cfg.output.devices.join(' + ')}`);
@@ -199,11 +200,11 @@ async function loadAirplay() {
   list.textContent = 'Recherche des enceintes…';
   try {
     const devs = (await api('/api/airplay/devices')).filter((d) => d.kind !== 'computer');
-    list.innerHTML = devs.length ? '' : 'Aucune enceinte AirPlay trouvée (Musique ouverte ?)';
+    list.innerHTML = devs.length ? (o.devices.length ? '' : '<p class="small" style="color:#ffb703">⚠️ Coche au moins une enceinte.</p>') : 'Aucune enceinte AirPlay trouvée (Musique ouverte ?)';
     devs.forEach((d) => {
       const l = document.createElement('label'); l.className = 'row';
       l.innerHTML = `<input type="checkbox" ${o.devices.includes(d.name) ? 'checked' : ''}> ${d.name} <span class="muted">${d.kind}</span>`;
-      l.querySelector('input').onchange = (e) => { o.devices = e.target.checked ? [...new Set([...o.devices, d.name])] : o.devices.filter((n) => n !== d.name); save(); };
+      l.querySelector('input').onchange = (e) => { o.devices = e.target.checked ? [...new Set([...o.devices, d.name])] : o.devices.filter((n) => n !== d.name); save(); loadAirplay(); };
       list.append(l);
     });
   } catch (e) { list.textContent = 'Erreur : ' + e.message + ' — autorise le Terminal à piloter « Musique » (Réglages Système → Confidentialité → Automatisation).'; }
