@@ -7,6 +7,13 @@ Le second Neo (**DUPLEX**) n'est jamais touché : le site ne pilote que le Neo d
 
 Double-clic sur **`Lancer NEO.command`** (dans le dossier PLH-NEO-PRIVATE) : mise à jour, démarrage du serveur en arrière-plan et ouverture de Chrome. Le Neo se reconnecte seul. **`Arreter NEO.command`** arrête le serveur.
 
+### Icône NEO dans la barre des menus (Hammerspoon)
+
+```bash
+cd ~/PLH-NEO-PRIVATE && git pull && grep -q neo-menubar ~/.hammerspoon/init.lua 2>/dev/null || echo 'dofile(os.getenv("HOME").."/PLH-NEO-PRIVATE/mac/neo-menubar.lua")' >> ~/.hammerspoon/init.lua
+```
+Puis Hammerspoon → *Reload Config*. Menu : Ouvrir le site · Démarrer/Arrêter · Redémarrer · Mettre à jour · Journal. Le serveur démarre seul à l’ouverture de session.
+
 ## Démarrage (Mac)
 
 ```bash
