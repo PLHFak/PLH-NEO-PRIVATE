@@ -1,0 +1,394 @@
+{
+  "name": "Neo Bureau",
+  "deviceSerial": "A7BSA52511PQBJ",
+  "brightness": 70,
+  "volume": 0.8,
+  "pages": [
+    {
+      "id": "fip",
+      "name": "Musique · FIP",
+      "color": "#e5007d",
+      "keys": [
+        {
+          "label": "FIP",
+          "icon": "📻",
+          "color": "#e5007d",
+          "action": {
+            "type": "radio",
+            "url": "https://icecast.radiofrance.fr/fip-hifi.aac?id=radiofrance"
+          }
+        },
+        {
+          "label": "Jazz",
+          "icon": "🎷",
+          "color": "#7a3cff",
+          "action": {
+            "type": "radio",
+            "url": "https://icecast.radiofrance.fr/fipjazz-hifi.aac?id=radiofrance"
+          }
+        },
+        {
+          "label": "Groove",
+          "icon": "🕺",
+          "color": "#ff7a00",
+          "action": {
+            "type": "radio",
+            "url": "https://icecast.radiofrance.fr/fipgroove-hifi.aac?id=radiofrance"
+          }
+        },
+        {
+          "label": "Rock",
+          "icon": "🎸",
+          "color": "#d62828",
+          "action": {
+            "type": "radio",
+            "url": "https://icecast.radiofrance.fr/fiprock-hifi.aac?id=radiofrance"
+          }
+        },
+        {
+          "label": "Électro",
+          "icon": "🎛️",
+          "color": "#00a6fb",
+          "action": {
+            "type": "radio",
+            "url": "https://icecast.radiofrance.fr/fipelectro-hifi.aac?id=radiofrance"
+          }
+        },
+        {
+          "label": "Monde",
+          "icon": "🌍",
+          "color": "#2a9d8f",
+          "action": {
+            "type": "radio",
+            "url": "https://icecast.radiofrance.fr/fipworld-hifi.aac?id=radiofrance"
+          }
+        },
+        {
+          "label": "Classique",
+          "icon": "🎻",
+          "color": "#8d6e63",
+          "action": {
+            "type": "radio",
+            "url": "https://icecast.radiofrance.fr/francemusique-hifi.aac?id=radiofrance"
+          }
+        },
+        {
+          "label": "Pause",
+          "icon": "⏯️",
+          "color": "#333333",
+          "action": {
+            "type": "toggle"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ytm",
+      "name": "Musique · YouTube Music",
+      "color": "#ff0033",
+      "keys": [
+        {
+          "label": "Ma musique",
+          "icon": "❤️",
+          "color": "#ff0033",
+          "action": {
+            "type": "url",
+            "url": "https://music.youtube.com/library"
+          }
+        },
+        {
+          "label": "Jazz",
+          "icon": "🎷",
+          "color": "#7a3cff",
+          "action": {
+            "type": "url",
+            "url": "https://music.youtube.com/search?q=jazz+classics+playlist"
+          }
+        },
+        {
+          "label": "Bossa",
+          "icon": "🌴",
+          "color": "#f4a261",
+          "action": {
+            "type": "url",
+            "url": "https://music.youtube.com/search?q=bossa+nova+playlist"
+          }
+        },
+        {
+          "label": "Lounge",
+          "icon": "🍸",
+          "color": "#264653",
+          "action": {
+            "type": "url",
+            "url": "https://music.youtube.com/search?q=lounge+chill+playlist"
+          }
+        },
+        {
+          "label": "Rock 70s",
+          "icon": "🎸",
+          "color": "#d62828",
+          "action": {
+            "type": "url",
+            "url": "https://music.youtube.com/search?q=70s+rock+playlist"
+          }
+        },
+        {
+          "label": "Piano",
+          "icon": "🎹",
+          "color": "#555555",
+          "action": {
+            "type": "url",
+            "url": "https://music.youtube.com/search?q=piano+focus+playlist"
+          }
+        },
+        {
+          "label": "Chanson",
+          "icon": "🇫🇷",
+          "color": "#1d3557",
+          "action": {
+            "type": "url",
+            "url": "https://music.youtube.com/search?q=chanson+fran%C3%A7aise+playlist"
+          }
+        },
+        {
+          "label": "Stop radio",
+          "icon": "⏹️",
+          "color": "#333333",
+          "action": {
+            "type": "stop"
+          }
+        }
+      ]
+    },
+    {
+      "id": "news",
+      "name": "News · Radio",
+      "color": "#0057b8",
+      "keys": [
+        {
+          "label": "BFM Business",
+          "icon": "📈",
+          "color": "#0057b8",
+          "action": {
+            "type": "radio",
+            "url": "https://audio.bfmtv.com/bfmbusiness_128.mp3",
+            "search": "BFM Business"
+          }
+        },
+        {
+          "label": "franceinfo",
+          "icon": "🗞️",
+          "color": "#f5a623",
+          "action": {
+            "type": "radio",
+            "url": "https://icecast.radiofrance.fr/franceinfo-hifi.aac?id=radiofrance",
+            "search": "franceinfo"
+          }
+        },
+        {
+          "label": "France Inter",
+          "icon": "🎙️",
+          "color": "#e20613",
+          "action": {
+            "type": "radio",
+            "url": "https://icecast.radiofrance.fr/franceinter-hifi.aac?id=radiofrance"
+          }
+        },
+        {
+          "label": "France Culture",
+          "icon": "📚",
+          "color": "#7b2cbf",
+          "action": {
+            "type": "radio",
+            "url": "https://icecast.radiofrance.fr/franceculture-hifi.aac?id=radiofrance"
+          }
+        },
+        {
+          "label": "BFM Radio",
+          "icon": "📺",
+          "color": "#003a80",
+          "action": {
+            "type": "radio",
+            "url": "https://audio.bfmtv.com/bfmradio_128.mp3",
+            "search": "BFM Radio"
+          }
+        },
+        {
+          "label": "La Première",
+          "icon": "🇧🇪",
+          "color": "#c1121f",
+          "action": {
+            "type": "radio",
+            "search": "RTBF La Premiere"
+          }
+        },
+        {
+          "label": "Vol −",
+          "icon": "🔉",
+          "color": "#333333",
+          "action": {
+            "type": "vol-"
+          }
+        },
+        {
+          "label": "Vol +",
+          "icon": "🔊",
+          "color": "#333333",
+          "action": {
+            "type": "vol+"
+          }
+        }
+      ]
+    },
+    {
+      "id": "podcasts",
+      "name": "Podcasts",
+      "color": "#2a9d8f",
+      "keys": [
+        {
+          "label": "Good Morning Business",
+          "icon": "☕",
+          "color": "#0057b8",
+          "action": {
+            "type": "podcast",
+            "search": "Good Morning Business BFM"
+          }
+        },
+        {
+          "label": "Les Experts",
+          "icon": "💼",
+          "color": "#003a80",
+          "action": {
+            "type": "podcast",
+            "search": "Les Experts BFM Business"
+          }
+        },
+        {
+          "label": "Journal franceinfo",
+          "icon": "🗞️",
+          "color": "#f5a623",
+          "action": {
+            "type": "podcast",
+            "search": "journal franceinfo"
+          }
+        },
+        {
+          "label": "Matinale Inter",
+          "icon": "🎙️",
+          "color": "#e20613",
+          "action": {
+            "type": "podcast",
+            "search": "France Inter matinale"
+          }
+        },
+        null,
+        null,
+        {
+          "label": "Vol −",
+          "icon": "🔉",
+          "color": "#333333",
+          "action": {
+            "type": "vol-"
+          }
+        },
+        {
+          "label": "Pause",
+          "icon": "⏯️",
+          "color": "#333333",
+          "action": {
+            "type": "toggle"
+          }
+        }
+      ]
+    },
+    {
+      "id": "bureau",
+      "name": "Bureau · Raccourcis",
+      "color": "#6c757d",
+      "keys": [
+        {
+          "label": "Capture zone",
+          "icon": "✂️",
+          "color": "#6c757d",
+          "action": {
+            "type": "shortcut",
+            "key": "4",
+            "mods": [
+              "cmd",
+              "shift"
+            ]
+          }
+        },
+        {
+          "label": "Spotlight",
+          "icon": "🔎",
+          "color": "#6c757d",
+          "action": {
+            "type": "shortcut",
+            "key": " ",
+            "mods": [
+              "cmd"
+            ]
+          }
+        },
+        {
+          "label": "Verrouiller",
+          "icon": "🔒",
+          "color": "#6c757d",
+          "action": {
+            "type": "shortcut",
+            "key": "q",
+            "mods": [
+              "cmd",
+              "ctrl"
+            ]
+          }
+        },
+        {
+          "label": "Mission Ctrl",
+          "icon": "🪟",
+          "color": "#6c757d",
+          "action": {
+            "type": "app",
+            "app": "Mission Control"
+          }
+        },
+        {
+          "label": "Teams",
+          "icon": "💬",
+          "color": "#4b53bc",
+          "action": {
+            "type": "app",
+            "app": "Microsoft Teams"
+          }
+        },
+        {
+          "label": "Chrome",
+          "icon": "🌐",
+          "color": "#1a73e8",
+          "action": {
+            "type": "app",
+            "app": "Google Chrome"
+          }
+        },
+        {
+          "label": "Claude",
+          "icon": "✳️",
+          "color": "#d97757",
+          "action": {
+            "type": "url",
+            "url": "https://claude.ai"
+          }
+        },
+        {
+          "label": "Pause",
+          "icon": "⏯️",
+          "color": "#333333",
+          "action": {
+            "type": "toggle"
+          }
+        }
+      ]
+    }
+  ]
+}
