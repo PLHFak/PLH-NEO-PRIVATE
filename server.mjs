@@ -37,9 +37,59 @@ function shortcutScript({ key, keyCode, mods = [] }) {
   throw new Error('Raccourci invalide (une touche ou un key code)');
 }
 
+// --- AirPlay via l'app Musique (HomePod…) : indépendant de la sortie son du Mac ---
+const AS_LIST = `tell application "Music"
+  set out to ""
+  repeat with d in (every AirPlay device)
+    set out to out & (name of d) & tab & (kind of d as text) & tab & (selected of d as text) & linefeed
+  end repeat
+  return out
+end tell`;
+const AS_PLAY = `on run argv
+  set u to item 1 of argv
+  tell application "Music"
+    if (count of argv) > 1 then
+      set devs to {}
+      repeat with i from 2 to count of argv
+        set end of devs to (AirPlay device (item i of argv))
+      end repeat
+      set current AirPlay devices to devs
+    end if
+    open location u
+    delay 1
+    if player state is not playing then play
+  end tell
+end run`;
+const osa = (script, args = []) => run('osascript', ['-e', script, ...args]);
+
+async function airplay(p, req, res) {
+  if (!IS_MAC) return send(res, 501, { error: 'Disponible seulement sur Mac' });
+  if (p === '/api/airplay/devices') {
+    const out = await osa(AS_LIST);
+    const list = out.trim().split('\n').filter(Boolean).map((l) => { const [name, kind, sel] = l.split('\t'); return { name, kind, selected: sel === 'true' }; });
+    return send(res, 200, list);
+  }
+  const b = req.method === 'POST' ? await readBody(req) : {};
+  if (p === '/api/airplay/play') {
+    if (!/^https?:\/\//i.test(b.url || '')) return send(res, 400, { error: 'URL invalide' });
+    await osa(AS_PLAY, [b.url, ...(b.devices || []).map(String)]);
+    if (Number.isFinite(b.volume)) await osa(`tell application "Music" to set sound volume to ${Math.round(Math.max(0, Math.min(100, b.volume)))}`);
+    return send(res, 200, { ok: true });
+  }
+  if (p === '/api/airplay/stop') { await osa('tell application "Music" to stop'); return send(res, 200, { ok: true }); }
+  if (p === '/api/airplay/toggle') { await osa('tell application "Music" to playpause'); return send(res, 200, { ok: true }); }
+  if (p === '/api/airplay/volume') {
+    const v = Math.round(Math.max(0, Math.min(100, Number(b.volume) || 0)));
+    await osa(`tell application "Music" to set sound volume to ${v}`);
+    return send(res, 200, { ok: true });
+  }
+  return send(res, 404, { error: 'inconnu' });
+}
+
 async function api(req, res, url) {
   const p = url.pathname;
   if (p === '/api/status') return send(res, 200, { local: true, mac: IS_MAC });
+  if (p.startsWith('/api/airplay/')) return airplay(p, req, res);
 
   if (p === '/api/config' && req.method === 'GET') {
     const f = existsSync(CONFIG) ? CONFIG : DEFAULT_CONFIG;

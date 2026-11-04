@@ -137,7 +137,7 @@ async function press(i) {
       case 'app': return await api('/api/open', { method: 'POST', body: { app: a.app } });
       case 'shortcut': return await api('/api/shortcut', { method: 'POST', body: { key: a.key, keyCode: a.keyCode ? +a.keyCode : undefined, mods: a.mods || [] } });
       case 'page': return goPage(state.cfg.pages.findIndex((p) => p.id === a.page));
-      case 'toggle': return audio.src && (audio.paused ? audio.play() : audio.pause());
+      case 'toggle': return togglePlay();
       case 'stop': return stop();
       case 'vol+': return setVol(audio.volume + 0.1);
       case 'vol-': return setVol(audio.volume - 0.1);
@@ -147,13 +147,58 @@ async function press(i) {
   }
 }
 
+const airplayOn = () => state.local && state.mac && state.cfg.output?.mode === 'airplay' && (state.cfg.output.devices || []).length;
 async function play(url, title, key) {
-  audio.src = url; audio.volume = state.cfg.volume ?? 0.8;
-  await audio.play();
+  if (airplayOn()) {
+    audio.pause();
+    toast(`AirPlay → ${state.cfg.output.devices.join(' + ')}`);
+    await api('/api/airplay/play', { method: 'POST', body: { url, devices: state.cfg.output.devices, volume: Math.round((state.cfg.volume ?? 0.8) * 100) } });
+  } else {
+    audio.src = url; audio.volume = state.cfg.volume ?? 0.8;
+    await audio.play();
+  }
   state.playing = title; state.playingKey = key; render();
 }
-function stop() { audio.pause(); audio.removeAttribute('src'); audio.load(); state.playing = null; state.playingKey = null; render(); }
-function setVol(v) { v = Math.max(0, Math.min(1, v)); audio.volume = v; state.cfg.volume = v; $('#vol').value = v; toast(`Volume ${Math.round(v * 100)} %`, 900); save(); }
+function togglePlay() {
+  if (airplayOn()) return api('/api/airplay/toggle', { method: 'POST' }).catch((e) => toast(e.message));
+  if (audio.src) audio.paused ? audio.play() : audio.pause();
+}
+function stop() {
+  if (state.local && state.mac && state.cfg.output?.mode === 'airplay') api('/api/airplay/stop', { method: 'POST' }).catch(() => {});
+  audio.pause(); audio.removeAttribute('src'); audio.load(); state.playing = null; state.playingKey = null; render();
+}
+let volTimer;
+function setVol(v) {
+  v = Math.max(0, Math.min(1, v)); audio.volume = v; state.cfg.volume = v; $('#vol').value = v; toast(`Volume ${Math.round(v * 100)} %`, 900); save();
+  if (airplayOn()) { clearTimeout(volTimer); volTimer = setTimeout(() => api('/api/airplay/volume', { method: 'POST', body: { volume: Math.round(v * 100) } }).catch(() => {}), 150); }
+}
+
+// ---------------------------------------------------------------- sortie audio
+function renderOutput() {
+  const o = state.cfg.output || (state.cfg.output = { mode: 'mac', devices: [] });
+  const box = $('#output');
+  if (!(state.local && state.mac)) { box.innerHTML = '<p class="small muted">AirPlay disponible avec le serveur local sur le Mac.</p>'; return; }
+  box.innerHTML = `<label class="field"><span>Le son sort sur</span><select id="outMode">
+      <option value="mac" ${o.mode !== 'airplay' ? 'selected' : ''}>Ce Mac (sortie son du système)</option>
+      <option value="airplay" ${o.mode === 'airplay' ? 'selected' : ''}>AirPlay via l’app Musique (HomePod…)</option></select></label>
+    <div id="outDevs" ${o.mode === 'airplay' ? '' : 'hidden'}><div class="row"><span class="small muted" style="flex:1">Enceintes AirPlay</span><button id="outRefresh">Rafraîchir</button></div><div id="outList" class="small muted">…</div></div>`;
+  $('#outMode').onchange = (e) => { o.mode = e.target.value; save(); renderOutput(); };
+  if (o.mode === 'airplay') { $('#outRefresh').onclick = loadAirplay; loadAirplay(); }
+}
+async function loadAirplay() {
+  const o = state.cfg.output, list = $('#outList');
+  list.textContent = 'Recherche des enceintes…';
+  try {
+    const devs = (await api('/api/airplay/devices')).filter((d) => d.kind !== 'computer');
+    list.innerHTML = devs.length ? '' : 'Aucune enceinte AirPlay trouvée (Musique ouverte ?)';
+    devs.forEach((d) => {
+      const l = document.createElement('label'); l.className = 'row';
+      l.innerHTML = `<input type="checkbox" ${o.devices.includes(d.name) ? 'checked' : ''}> ${d.name} <span class="muted">${d.kind}</span>`;
+      l.querySelector('input').onchange = (e) => { o.devices = e.target.checked ? [...new Set([...o.devices, d.name])] : o.devices.filter((n) => n !== d.name); save(); };
+      list.append(l);
+    });
+  } catch (e) { list.textContent = 'Erreur : ' + e.message + ' — autorise le Terminal à piloter « Musique » (Réglages Système → Confidentialité → Automatisation).'; }
+}
 
 async function playRadio(k) {
   const a = k.action;
@@ -305,11 +350,11 @@ function save() {
   }, 400);
 }
 $('#btnExport').onclick = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(state.cfg, null, 2)], { type: 'application/json' })); a.download = 'neo-bureau.json'; a.click(); };
-$('#fileImport').onchange = async (e) => { try { const c = JSON.parse(await e.target.files[0].text()); if (!Array.isArray(c.pages)) throw 0; state.cfg = c; state.page = 0; save(); render(); toast('Config importée'); } catch { toast('Fichier invalide'); } };
-$('#btnReset').onclick = async () => { if (!confirm('Revenir à la configuration d’origine ?')) return; const serial = state.cfg.deviceSerial; state.cfg = await (await fetch('default-config.json')).json(); state.cfg.deviceSerial = serial; state.page = 0; save(); render(); };
+$('#fileImport').onchange = async (e) => { try { const c = JSON.parse(await e.target.files[0].text()); if (!Array.isArray(c.pages)) throw 0; state.cfg = c; state.page = 0; save(); render(); renderOutput(); toast('Config importée'); } catch { toast('Fichier invalide'); } };
+$('#btnReset').onclick = async () => { if (!confirm('Revenir à la configuration d’origine ?')) return; const serial = state.cfg.deviceSerial; state.cfg = await (await fetch('default-config.json')).json(); state.cfg.deviceSerial = serial; state.page = 0; save(); render(); renderOutput(); };
 $('#bright').oninput = (e) => { state.cfg.brightness = +e.target.value; state.deck?.setBrightness(+e.target.value).catch(() => {}); save(); };
 $('#vol').oninput = (e) => setVol(+e.target.value);
-$('#btnToggle').onclick = () => audio.src && (audio.paused ? audio.play() : audio.pause());
+$('#btnToggle').onclick = togglePlay;
 $('#btnStop').onclick = stop;
 $('#touchL').onclick = () => goPage(state.page - 1);
 $('#touchL').oncontextmenu = (e) => { e.preventDefault(); goPage(0); };
@@ -328,7 +373,7 @@ if (navigator.hid) navigator.hid.addEventListener('disconnect', () => { if (stat
   } catch {}
   if (!state.cfg) state.cfg = await (await fetch('default-config.json')).json();
   $('#vol').value = state.cfg.volume ?? 0.8; $('#bright').value = state.cfg.brightness ?? 70;
-  render();
+  render(); renderOutput();
   // Reconnexion automatique au Neo Bureau déjà autorisé
   if (navigator.hid && state.cfg.deviceSerial) getStreamDecks().then((l) => l.length && connect(l)).catch(() => {});
 })();

@@ -38,6 +38,8 @@ Pages par défaut : **Musique · FIP** · **Musique · YouTube Music** · **News
 
 ## Points à connaître
 
+- **Sortie audio / HomePod** : carte « Sortie audio » → *AirPlay via l’app Musique*, puis cocher les HomePod. Le son part en AirPlay, indépendamment de la sortie du Mac. À la 1re utilisation, macOS demande d’autoriser le Terminal à piloter « Musique ».
+
 - **Raccourcis clavier** : à la 1re utilisation, macOS demande l'autorisation *Accessibilité* pour le Terminal (Réglages Système → Confidentialité et sécurité → Accessibilité).
 - **Logiciel Elgato Stream Deck** : s'il tourne, il redessine aussi le Neo Bureau. Le quitter, ou ne lui laisser gérer que le Neo DUPLEX.
 - **YouTube Music** n'a pas d'API de lecture : les touches ouvrent la playlist ou la recherche dans le navigateur.
