@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PLH NEO · Bureau</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header>
+  <div class="brand"><span class="dot"></span> PLH NEO <b>Bureau</b></div>
+  <div id="mode" class="pill">…</div>
+  <div class="spacer"></div>
+  <div id="device" class="pill off">Neo non connecté</div>
+  <button id="btnConnect" class="primary">Connecter le Neo Bureau</button>
+  <button id="btnPair" title="Choisir le Neo à associer (et ignorer l'autre)">Associer…</button>
+</header>
+
+<main>
+  <section class="left">
+    <nav id="pages" class="pages"></nav>
+
+    <div class="neo">
+      <div id="grid" class="grid"></div>
+      <div class="bar">
+        <button id="touchL" class="touch" title="Page précédente (appui long : 1re page)">◀</button>
+        <canvas id="lcd" width="248" height="58"></canvas>
+        <button id="touchR" class="touch" title="Page suivante">▶</button>
+      </div>
+    </div>
+    <p class="hint">Clique une touche pour la déclencher · <b>Alt + clic</b> (ou le crayon) pour la modifier · glisse une touche sur une autre pour les permuter.</p>
+
+    <div class="player">
+      <div id="nowPlaying">Rien en lecture</div>
+      <button id="btnToggle">⏯</button>
+      <button id="btnStop">⏹</button>
+      <input id="vol" type="range" min="0" max="1" step="0.05" title="Volume">
+      <audio id="audio" preload="none"></audio>
+    </div>
+  </section>
+
+  <section class="right">
+    <div id="editor" class="card"><p class="muted">Sélectionne une touche pour la configurer.</p></div>
+
+    <div class="card">
+      <h3>Page</h3>
+      <div class="row">
+        <input id="pageName" placeholder="Nom de la page">
+        <input id="pageColor" type="color" title="Couleur (LED des touches tactiles)">
+      </div>
+      <div class="row">
+        <button id="pageAdd">+ Page</button>
+        <button id="pageUp">↑</button>
+        <button id="pageDown">↓</button>
+        <button id="pageDel" class="danger">Supprimer</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Réglages</h3>
+      <label class="row">Luminosité <input id="bright" type="range" min="10" max="100" step="5"></label>
+      <div class="row">
+        <button id="btnExport">Exporter JSON</button>
+        <label class="btn">Importer<input id="fileImport" type="file" accept="application/json" hidden></label>
+        <button id="btnReset" class="danger">Config d'origine</button>
+      </div>
+      <p id="saveState" class="muted small"></p>
+    </div>
+  </section>
+</main>
+
+<div id="toast"></div>
+<script type="module" src="app.js"></script>
+</body>
+</html>

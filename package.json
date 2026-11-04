@@ -1,0 +1,29 @@
+{
+  "name": "plh-neo-bureau",
+  "version": "1.0.0",
+  "description": "Pilotage du Stream Deck Neo Bureau (radio, musique, news, podcasts, raccourcis)",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "start": "node server.mjs",
+    "build:vendor": "esbuild src/vendor-entry.js --bundle --format=esm --minify --outfile=public/vendor/streamdeck.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PLHFak/plh-neo-private.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/PLHFak/plh-neo-private/issues"
+  },
+  "homepage": "https://github.com/PLHFak/plh-neo-private#readme",
+  "devDependencies": {
+    "@elgato-stream-deck/webhid": "^7.8.0",
+    "esbuild": "^0.28.2"
+  },
+  "type": "module",
+  "private": true
+}
