@@ -69,6 +69,13 @@ function drawLcd() {
   const now = new Date();
   g.textAlign = 'right'; g.fillStyle = '#fff'; g.font = '600 13px -apple-system,Arial,sans-serif';
   g.fillText(now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }), LCD_W - 6, 34);
+  if (Date.now() < (state.volUntil || 0)) {
+    const v = state.cfg.volume ?? 0.8;
+    g.textAlign = 'left'; g.fillStyle = '#fff'; g.font = '12px -apple-system,Arial,sans-serif';
+    g.fillText(`🔊 ${Math.round(v * 100)} %`, 12, 36);
+    g.fillStyle = '#333'; g.fillRect(80, 40, 100, 8); g.fillStyle = '#2bd576'; g.fillRect(80, 40, 100 * v, 8);
+    return c;
+  }
   g.textAlign = 'left'; g.fillStyle = state.playing ? '#2bd576' : '#667';
   g.font = '12px -apple-system,Arial,sans-serif';
   g.fillText(state.playing ? `▶ ${state.playing}` : '—', 12, 36, LCD_W - 70);
@@ -121,7 +128,8 @@ function paintDeck() {
     await deck.fillLcd(0, rgba(drawLcd()), { format: 'rgba' });
   }).catch((e) => console.warn('Neo:', e));
 }
-setInterval(() => { drawLcd(); if (state.deck) state.deck.fillLcd(0, rgba(drawLcd()), { format: 'rgba' }).catch(() => {}); }, 20000);
+function paintLcd() { const c = drawLcd(); if (state.deck) state.deck.fillLcd(0, rgba(c), { format: 'rgba' }).catch(() => {}); }
+setInterval(paintLcd, 20000);
 
 // ---------------------------------------------------------------- navigation & actions
 function goPage(i) { state.page = (i + state.cfg.pages.length) % state.cfg.pages.length; state.sel = null; render(); }
@@ -169,7 +177,8 @@ function stop() {
 }
 let volTimer;
 function setVol(v) {
-  v = Math.max(0, Math.min(1, v)); audio.volume = v; state.cfg.volume = v; $('#vol').value = v; toast(`Volume ${Math.round(v * 100)} %`, 900); save();
+  v = Math.round(Math.max(0, Math.min(1, v)) * 100) / 100; audio.volume = v; state.cfg.volume = v; $('#vol').value = v; save();
+  state.volUntil = Date.now() + 1500; paintLcd(); clearTimeout(state.volLcd); state.volLcd = setTimeout(paintLcd, 1600);
   if (airplayOn()) { clearTimeout(volTimer); volTimer = setTimeout(() => api('/api/airplay/volume', { method: 'POST', body: { volume: Math.round(v * 100) } }).catch(() => {}), 150); }
 }
 
@@ -235,17 +244,24 @@ const touchT = new Map();
 async function attach(deck) {
   state.deck = deck;
   await deck.setBrightness(state.cfg.brightness ?? 70).catch(() => {});
+  // Touches tactiles : appui bref = page ; appui maintenu = volume (◀ baisse, ▶ monte)
   deck.on('down', (c) => {
     if (c.type !== 'button') return;
-    if (c.index < NKEYS) press(c.index);
-    else touchT.set(c.index, performance.now());
+    if (c.index < NKEYS) return press(c.index);
+    const step = c.index === TOUCH_L ? -0.05 : 0.05;
+    const t = { vol: false };
+    t.timer = setTimeout(() => { t.vol = true; setVol(audio.volume + step); t.rep = setInterval(() => setVol(audio.volume + step), 180); }, 450);
+    touchT.set(c.index, t);
   });
   deck.on('up', (c) => {
     if (c.type !== 'button' || c.index < NKEYS) return;
-    const long = performance.now() - (touchT.get(c.index) || 0) > 600;
-    if (c.index === TOUCH_L) goPage(long ? 0 : state.page - 1);
-    if (c.index === TOUCH_R) goPage(state.page + 1);
+    const t = touchT.get(c.index) || {}; clearTimeout(t.timer); clearInterval(t.rep); touchT.delete(c.index);
+    if (t.vol) return;
+    goPage(state.page + (c.index === TOUCH_L ? -1 : 1));
   });
+  // Écran central : s'il est tactile sur ce modèle, tap gauche/droite = volume −/+, glissé = volume
+  deck.on('lcdShortPress', (_c, pos) => setVol(audio.volume + (pos.x < LCD_W / 2 ? -0.1 : 0.1)));
+  deck.on('lcdSwipe', (_c, a, b) => setVol(audio.volume + (b.x - a.x) / LCD_W));
   deck.on('error', (e) => { console.warn(e); detach(); });
   $('#device').textContent = `Neo Bureau · ${state.cfg.deviceSerial}`; $('#device').className = 'pill on';
   $('#btnConnect').textContent = 'Connecté'; paintDeck();
@@ -356,9 +372,12 @@ $('#bright').oninput = (e) => { state.cfg.brightness = +e.target.value; state.de
 $('#vol').oninput = (e) => setVol(+e.target.value);
 $('#btnToggle').onclick = togglePlay;
 $('#btnStop').onclick = stop;
-$('#touchL').onclick = () => goPage(state.page - 1);
-$('#touchL').oncontextmenu = (e) => { e.preventDefault(); goPage(0); };
-$('#touchR').onclick = () => goPage(state.page + 1);
+for (const [id, dir] of [['#touchL', -1], ['#touchR', 1]]) {
+  const el = $(id); let t = {};
+  el.onpointerdown = () => { t = { vol: false }; t.timer = setTimeout(() => { t.vol = true; setVol(audio.volume + dir * 0.05); t.rep = setInterval(() => setVol(audio.volume + dir * 0.05), 180); }, 450); };
+  el.onpointerup = () => { clearTimeout(t.timer); clearInterval(t.rep); if (!t.vol) goPage(state.page + dir); };
+  el.onpointerleave = () => { clearTimeout(t.timer); clearInterval(t.rep); };
+}
 $('#btnConnect').onclick = () => connect().catch((e) => toast(e.message, 5000));
 $('#btnPair').onclick = () => pair().catch((e) => toast(e.message, 5000));
 audio.onerror = () => { if (state.playing) toast('Flux audio indisponible'); };

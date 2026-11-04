@@ -23,9 +23,9 @@ Aucune installation de paquets n'est nécessaire (Node 18 ou plus).
 | Élément | Rôle |
 |---|---|
 | 8 touches | presets de la page en cours |
-| Touche tactile ◀ | page précédente · **appui long** : 1re page |
-| Touche tactile ▶ | page suivante |
-| Écran (infobar) | nom de la page, n° de page, lecture en cours, heure |
+| Touche tactile ◀ | appui bref : page précédente · **maintenu : volume −** |
+| Touche tactile ▶ | appui bref : page suivante · **maintenu : volume +** |
+| Écran (infobar) | nom de la page, n° de page, lecture en cours, heure · barre de volume pendant le réglage |
 
 Pages par défaut : **Musique · FIP** · **Musique · YouTube Music** · **News · Radio** (BFM Business, franceinfo, Inter…) · **Podcasts** · **Bureau · Raccourcis**.
 
