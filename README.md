@@ -3,6 +3,10 @@
 Site local pour configurer et piloter le **Stream Deck Neo « Bureau »** : radios musicales, YouTube Music, news, podcasts et raccourcis Mac.
 Le second Neo (**DUPLEX**) n'est jamais touché : le site ne pilote que le Neo dont le numéro de série a été associé.
 
+## Au quotidien
+
+Double-clic sur **`Lancer NEO.command`** (dans le dossier PLH-NEO-PRIVATE) : mise à jour, démarrage du serveur en arrière-plan et ouverture de Chrome. Le Neo se reconnecte seul. **`Arreter NEO.command`** arrête le serveur.
+
 ## Démarrage (Mac)
 
 ```bash
