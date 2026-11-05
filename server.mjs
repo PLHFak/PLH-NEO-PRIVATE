@@ -55,9 +55,8 @@ const AS_PLAY = `on run argv
       end repeat
       set current AirPlay devices to devs
     end if
+    stop
     open location u
-    delay 1
-    if player state is not playing then play
   end tell
 end run`;
 const osa = (script, args = []) => run('osascript', ['-e', script, ...args]);
@@ -75,6 +74,30 @@ async function airplay(p, req, res) {
     await osa(AS_PLAY, [b.url, ...(b.devices || []).map(String)]);
     if (Number.isFinite(b.volume)) await osa(`tell application "Music" to set sound volume to ${Math.round(Math.max(0, Math.min(100, b.volume)))}`);
     return send(res, 200, { ok: true });
+  }
+  if (p === '/api/airplay/state') {
+    const out = await osa(`tell application "Music"
+  set st to player state as text
+  set nm to ""
+  try
+    set nm to name of current track
+  end try
+  set strm to ""
+  try
+    set strm to current stream title
+  end try
+  set su to ""
+  try
+    set su to current stream URL
+  end try
+  set devs to ""
+  repeat with d in (current AirPlay devices)
+    set devs to devs & (name of d) & ", "
+  end repeat
+  return st & tab & nm & tab & strm & tab & su & tab & devs
+end tell`);
+    const [state, track, stream, streamUrl, devices] = out.replace(/\n$/, '').split('\t');
+    return send(res, 200, { state, track, stream, streamUrl, devices });
   }
   if (p === '/api/airplay/stop') { await osa('tell application "Music" to stop'); return send(res, 200, { ok: true }); }
   if (p === '/api/airplay/toggle') { await osa('tell application "Music" to playpause'); return send(res, 200, { ok: true }); }
