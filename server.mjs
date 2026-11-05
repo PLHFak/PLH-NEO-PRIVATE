@@ -109,10 +109,33 @@ end tell`);
   return send(res, 404, { error: 'inconnu' });
 }
 
+// --- Sortie son du Mac (outil SwitchAudioSource : brew install switchaudio-osx) ---
+const SAS_PATHS = ['/opt/homebrew/bin/SwitchAudioSource', '/usr/local/bin/SwitchAudioSource', `${process.env.HOME}/.homebrew/bin/SwitchAudioSource`];
+const sasBin = () => SAS_PATHS.find((f) => existsSync(f));
+async function outputApi(p, req, res) {
+  if (!IS_MAC) return send(res, 501, { error: 'Disponible seulement sur Mac' });
+  const bin = sasBin();
+  if (!bin) return send(res, 501, { error: 'Outil manquant : dans le Terminal, tape  brew install switchaudio-osx' });
+  const list = (await run(bin, ['-a', '-t', 'output'])).split('\n').map((x) => x.trim()).filter(Boolean);
+  const current = (await run(bin, ['-c', '-t', 'output'])).trim();
+  if (p === '/api/output/list') return send(res, 200, { current, list });
+  if (p === '/api/output/toggle' && req.method === 'POST') {
+    const b = await readBody(req);
+    const a = b.a || 'Bureau';
+    const local = b.b || list.find((n) => /macbook|haut-parleurs|speakers/i.test(n)) || list[0];
+    if (!list.includes(a)) return send(res, 404, { error: `« ${a} » introuvable. Sorties vues : ${list.join(', ')}` });
+    const target = current === a ? local : a;
+    await run(bin, ['-s', target, '-t', 'output']);
+    return send(res, 200, { ok: true, current: target });
+  }
+  return send(res, 404, { error: 'inconnu' });
+}
+
 async function api(req, res, url) {
   const p = url.pathname;
   if (p === '/api/status') return send(res, 200, { local: true, mac: IS_MAC });
   if (p.startsWith('/api/airplay/')) return airplay(p, req, res);
+  if (p.startsWith('/api/output/')) return outputApi(p, req, res);
 
   if (p === '/api/config' && req.method === 'GET') {
     const f = existsSync(CONFIG) ? CONFIG : DEFAULT_CONFIG;

@@ -12,6 +12,7 @@ const ACTIONS = {
   shortcut: 'Raccourci clavier Mac',
   app: 'Ouvrir une application Mac',
   page: 'Aller à une page',
+  output: 'Basculer la sortie son du Mac (HomePod ↔ Mac)',
   toggle: 'Pause / Lecture',
   stop: 'Stop',
   'vol+': 'Volume +',
@@ -144,6 +145,11 @@ async function press(i) {
       case 'url': return await openUrl(a.url);
       case 'app': return await api('/api/open', { method: 'POST', body: { app: a.app } });
       case 'shortcut': return await api('/api/shortcut', { method: 'POST', body: { key: a.key, keyCode: a.keyCode ? +a.keyCode : undefined, mods: a.mods || [] } });
+      case 'output': {
+        const r = await api('/api/output/toggle', { method: 'POST', body: { a: a.a || 'Bureau', b: a.b || undefined } });
+        state.outputNow = r.current; k.label = /bureau|homepod/i.test(r.current) ? 'Sortie HomePod' : 'Sortie Mac'; k.icon = /bureau|homepod/i.test(r.current) ? '🔊' : '💻';
+        changed(); return toast(`Son du Mac → ${r.current}`);
+      }
       case 'page': return goPage(state.cfg.pages.findIndex((p) => p.id === a.page));
       case 'toggle': return togglePlay();
       case 'stop': return stop();
@@ -310,6 +316,7 @@ function renderEditor() {
   if (a.type === 'app') extra = f('app', 'Nom de l’application', a.app, 'ex. Microsoft Teams');
   if (a.type === 'shortcut') extra = f('key', 'Touche (1 caractère)', a.key, 'ex. c') + f('keyCode', 'ou key code Mac', a.keyCode, 'ex. 53 = Échap') +
     `<div class="mods">${['cmd', 'shift', 'alt', 'ctrl'].map((m) => `<label><input type="checkbox" data-mod="${m}" ${(a.mods || []).includes(m) ? 'checked' : ''}> ${{ cmd: '⌘', shift: '⇧', alt: '⌥', ctrl: '⌃' }[m]}</label>`).join('')}</div>`;
+  if (a.type === 'output') extra = f('a', 'Sortie AirPlay / HomePod', a.a, 'Bureau') + f('b', 'Sortie Mac (vide = haut-parleurs du Mac)', a.b) + '<p class="small muted">Nécessite : brew install switchaudio-osx</p>';
   if (a.type === 'page') extra = `<label class="field"><span>Page cible</span><select data-a="page">${state.cfg.pages.map((p) => `<option value="${p.id}" ${p.id === a.page ? 'selected' : ''}>${p.name}</option>`).join('')}</select></label>`;
 
   ed.innerHTML = `<h3>Touche ${state.sel + 1}</h3>
@@ -384,6 +391,20 @@ $('#btnPair').onclick = () => pair().catch((e) => toast(e.message, 5000));
 audio.onerror = () => { if (state.playing) toast('Flux audio indisponible'); };
 if (navigator.hid) navigator.hid.addEventListener('disconnect', () => { if (state.deck) { state.deck.close().catch(() => {}); detach(); } });
 
+function migrate(c) {
+  c.migrations = c.migrations || [];
+  if (!c.migrations.includes('output-key')) {
+    const ytm = c.pages.find((p) => p.id === 'ytm');
+    const hasOut = c.pages.some((p) => p.keys.some((k) => k?.action?.type === 'output'));
+    if (ytm && !hasOut) {
+      let i = ytm.keys.findIndex((k) => !k || k.action?.type === 'stop');
+      if (i < 0) i = NKEYS - 1;
+      ytm.keys[i] = { label: 'Sortie', icon: '🔀', color: '#5e60ce', action: { type: 'output', a: 'Bureau' } };
+    }
+    c.migrations.push('output-key'); save();
+  }
+}
+
 // ---------------------------------------------------------------- démarrage
 (async function init() {
   try { const s = await api('/api/status'); state.local = !!s.local; state.mac = !!s.mac; } catch {}
@@ -392,6 +413,7 @@ if (navigator.hid) navigator.hid.addEventListener('disconnect', () => { if (stat
     state.cfg = state.local ? await api('/api/config') : JSON.parse(localStorage.getItem(LS) || 'null');
   } catch {}
   if (!state.cfg) state.cfg = await (await fetch('default-config.json')).json();
+  migrate(state.cfg);
   $('#vol').value = state.cfg.volume ?? 0.8; $('#bright').value = state.cfg.brightness ?? 70;
   render(); renderOutput();
   // Reconnexion automatique au Neo Bureau déjà autorisé

@@ -27,7 +27,7 @@
         { "label": "Rock 70s", "icon": "🎸", "color": "#d62828", "action": { "type": "url", "url": "https://music.youtube.com/search?q=70s+rock+playlist" } },
         { "label": "Piano", "icon": "🎹", "color": "#555555", "action": { "type": "url", "url": "https://music.youtube.com/search?q=piano+focus+playlist" } },
         { "label": "Chanson", "icon": "🇫🇷", "color": "#1d3557", "action": { "type": "url", "url": "https://music.youtube.com/search?q=chanson+fran%C3%A7aise+playlist" } },
-        { "label": "Stop radio", "icon": "⏹️", "color": "#333333", "action": { "type": "stop" } }
+        { "label": "Sortie", "icon": "🔀", "color": "#5e60ce", "action": { "type": "output", "a": "Bureau" } }
       ]
     },
     {
